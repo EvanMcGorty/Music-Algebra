@@ -3,7 +3,7 @@
 
 //interval between note names, e.g. a third, a fifth, a second, not something like a major third or a minor seventh.
 //simply the number of diatonic steps required to get from one note to another
-class basic_interval
+struct basic_interval
 {
     using interval_length_t = int;
 
@@ -31,7 +31,7 @@ class basic_interval
 //a number type to represent the number and direction of an accidental attached to a note in a given system.
 //must be able to be added and subtracted with itself and be .inverted
 template<typename t>
-concept accidental_count_num = requires (t a)
+concept accidental_count_num = requires (t const& a)
 {
     {a+a} -> std::same_as<t>;
     {-a} -> std::same_as<t>;
@@ -42,11 +42,11 @@ concept accidental_count_num = requires (t a)
 template<typename t, typename accidental_t>
 concept note_letter_holder = 
     accidental_count_num<accidental_t> 
-    && requires (t a, basic_interval b)
+    && requires (t const& a, basic_interval const& b)
 {
     {a.diatonic_distance_above(a)} -> std::same_as<basic_interval>; //should preferably only return positive intervals
     {a.shifted_up_by(b)} -> std::same_as<t>; //naturally shifts down if b is a negative interval
-	{a.accidental_difference_from(a)} -> std::convertible_to<accidental_t>; //should preferably only return positive differences
+	{a.accidental_difference_from(a)} -> std::convertible_to<accidental_t>;
 };
 
 
@@ -88,18 +88,19 @@ struct note_name
 
     pure_interval<num_t> operator/(note_name const& rhs) const
     {
-        pure_interval<num_t>(letter.diatonic_distance_above(rhs.letter),letter.accidental_difference_from(rhs.letter)+accidental_count-rhs.accidental_count)
+        return pure_interval<num_t>(letter.diatonic_distance_above(rhs.letter),letter.accidental_difference_from(rhs.letter)+(accidental_count+(-rhs.accidental_count)));
     }
 
     note_name operator*(pure_interval<num_t> const& rhs) const
     {
-        note_name(letter.shifted_up_by(rhs.diatonic_distance),accidental_count+rhs.accidental_distance)
+        letter_t new_letter = letter.shifted_up_by(rhs.diatonic_distance);
+        return note_name(new_letter,accidental_count+rhs.accidental_distance+(letter.accidental_difference_from(new_letter)));
     }
 
     note_name operator/(pure_interval<num_t> const& rhs) const
     {
         pure_interval<num_t> inv_rhs = rhs.inverted();
-        note_name(letter.shifted_up_by(inv_rhs.diatonic_distance),accidental_count+inv_rhs.accidental_distance)
+        return this->operator*(inv_rhs);
     }
 
 };
