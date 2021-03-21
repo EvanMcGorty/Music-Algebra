@@ -11,10 +11,6 @@ public:
     {
         return int_accidental_count{count+rhs.count};
     }
-    constexpr int_accidental_count operator-(int_accidental_count rhs) const
-    {
-        return int_accidental_count{count-rhs.count};
-    }
 
     constexpr int_accidental_count operator-() const
     {
