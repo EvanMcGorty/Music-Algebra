@@ -1,0 +1,13 @@
+implement two classes conforming to the concepts:
+
+accidental_count_num:
+	a number type capable of representing the accidental of a note
+	can also represent the quality of an interval (i.e. major, minor, etc)
+	can be added with itself and can be negated.
+note_letter_holder:
+	a type that can store the letter (or symbol) used to represent a given note
+	can calculate the diatonic distance between two notes
+	can calculate an accidental_count_num that indicates teh quality of an interval between two notes
+	can be shifted a diatonic distance
+
+to be continued

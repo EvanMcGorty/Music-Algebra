@@ -1,0 +1,59 @@
+basic definitions:
+
+set: unordered collection without duplicates
+ordered set: collection with indexes but without duplicates
+list: collection with indexes that can have duplicates
+
+
+notable musical entities:
+
+letter:
+musical note letter without indication of accidentals or pitch
+
+accidental:
+some number of sharps or flats
+
+note name:
+a letter with an accidental; purely theoretical note independent of frequency or octave
+
+exact note:
+note name with some indication of its exact pitch (such as octave, frequency, or ratio to another note)
+
+basic interval:
+diatonic distance between two notes; interval between two letters
+
+pure interval:
+distance between two exact notes
+
+chord:
+unordered set of note names with no starting point
+
+chord inversion:
+unordered set of note names with a starting point
+
+scale:
+ordered set of note names with no starting point
+
+mode:
+ordered set of note names with a starting point
+
+degree:
+an index of a mode
+
+scale interval:
+a distance between notes in a scale or mode; a distance between degrees
+
+chord voicing:
+set of exact notes
+
+harmonic progression:
+list of chords
+
+chord progression:
+list of chord inversions
+
+scale progression:
+list of scales
+
+mode progression:
+list of modes
