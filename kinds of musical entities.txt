@@ -1,29 +1,38 @@
 basic definitions:
 
-set: unordered collection without duplicates
+unordered set: unordered collection without duplicates
 ordered set: collection with indexes but without duplicates
 list: collection with indexes that can have duplicates
 
 
-notable musical entities:
 
-letter:
-musical note letter without indication of accidentals or pitch
+single note:
+
+note letter:
+musical note note letter without indication of accidentals or pitch
 
 accidental:
 some number of sharps or flats
 
 note name:
-a letter with an accidental; purely theoretical note independent of frequency or octave
+a note letter with an accidental; purely theoretical note independent of frequency or octave
 
 exact note:
 note name with some indication of its exact pitch (such as octave, frequency, or ratio to another note)
 
 basic interval:
-diatonic distance between two notes; interval between two letters
+diatonic distance between two notes; interval between two note letters
 
 pure interval:
-distance between two exact notes
+distance between two note_names
+
+exact interval:
+distance between two exact notes; a pure interval with some indication of its exact ratio
+
+
+
+
+collection of notes:
 
 chord:
 unordered set of note names with no starting point
@@ -31,20 +40,40 @@ unordered set of note names with no starting point
 chord inversion:
 unordered set of note names with a starting point
 
+exact chord:
+unordered set of exact notes (unordered even though they may implicitly have order by thir pitch)
+
+extended exact chord:
+infinite ordered set of exact notes
+
 scale:
 ordered set of note names with no starting point
+
+exact scale:
+scale with exact notes instead of note names
+
+extended exact scale:
+infinite ordered set of exact notes
 
 mode:
 ordered set of note names with a starting point
 
+exact mode:
+mode with exact notes instead of note names
+
+extended exact mode
+infinite ordered set of note names with a starting point
+
 degree:
-an index of a mode
+an index of a mode (or exact mode)
 
 scale interval:
 a distance between notes in a scale or mode; a distance between degrees
 
-chord voicing:
-set of exact notes
+
+
+
+collection of collection of notes
 
 harmonic progression:
 list of chords

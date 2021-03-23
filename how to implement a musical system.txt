@@ -7,7 +7,7 @@ accidental_count_num:
 note_letter_holder:
 	a type that can store the letter (or symbol) used to represent a given note
 	can calculate the diatonic distance between two notes
-	can calculate an accidental_count_num that indicates teh quality of an interval between two notes
+	can calculate an accidental_count_num that indicates the quality of an interval between two raw notes (i.e. without accidentals)
 	can be shifted a diatonic distance
 
 to be continued
