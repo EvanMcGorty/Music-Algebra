@@ -31,13 +31,12 @@ std::copy_constructible<t>
 
 //a type that represents a note name, independent of accidentals.
 //can be multiplied by a basic_interval to shift it up by that interval
-template<typename t, typename accidental_t, typename interval_length_t>
+template<typename t, typename accidental_t, typename basic_interval_t>
 concept note_letter_holder = 
-    accidental_count_num<accidental_t> 
-    && interval_count_num<interval_length_t>
-    && requires (t const& a, basic_interval<interval_length_t> const& b)
+    accidental_count_num<accidental_t>
+    && requires (t const& a, basic_interval_t const& b)
 {
-    {a.diatonic_distance_above(a)} -> std::convertible_to<basic_interval<interval_length_t>>; //should preferably only return positive intervals
+    {a.diatonic_distance_above(a)} -> std::convertible_to<basic_interval_t>; //should preferably only return positive intervals
     {a.shifted_up_by(b)} -> std::same_as<t>; //naturally shifts down if b is a negative interval
 	{a.accidental_difference_from(a)} -> std::convertible_to<accidental_t>;
 };

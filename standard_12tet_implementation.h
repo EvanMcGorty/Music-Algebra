@@ -1,5 +1,5 @@
 #include<array>
-#include"note_name.h"
+#include"notes_and_intervals.h"
 #include<assert.h>
 
 

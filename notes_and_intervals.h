@@ -54,7 +54,7 @@ struct pure_interval
 
 //a note in its mathematically purest form.
 //indicates diatonic position as well as its accidental.
-template<accidental_count_num num_t, interval_count_num interval_length_t, note_letter_holder<num_t,interval_length_t> letter_t>
+template<accidental_count_num num_t, interval_count_num interval_length_t, note_letter_holder<num_t,basic_interval<interval_length_t>> letter_t>
 struct note_name
 {
     letter_t letter;
