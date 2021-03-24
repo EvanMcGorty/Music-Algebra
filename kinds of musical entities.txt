@@ -35,51 +35,30 @@ distance between two exact notes; a pure interval with some indication of its ex
 collection of notes:
 
 chord:
-unordered set of note names with no starting point
-
-chord inversion:
-unordered set of note names with a starting point
-
-exact chord:
-unordered set of exact notes (unordered even though they may implicitly have order by thir pitch)
-
-extended exact chord:
-infinite ordered set of exact notes
+unordered set of notes with no starting point
 
 scale:
-ordered set of note names with no starting point
-
-exact scale:
-scale with exact notes instead of note names
-
-extended exact scale:
-infinite ordered set of exact notes
+ordered set of notes with no starting point
 
 mode:
-ordered set of note names with a starting point
-
-exact mode:
-mode with exact notes instead of note names
-
-extended exact mode
-infinite ordered set of note names with a starting point
+ordered set of notes with a starting point
 
 degree:
-an index of a mode (or exact mode)
+an index of any kind of mode
 
 scale interval:
-a distance between notes in a scale or mode; a distance between degrees
+a distance between degrees
 
-
+exact ____:
+(only if ____ contains a note or a pure interval)
+a ____ with exact notes and exact intervals
+even if an unordered set of notes now has order implicitly because of pitch, it is still technically unordered
 
 
 collection of collection of notes
 
-harmonic progression:
-list of chords
-
 chord progression:
-list of chord inversions
+list of chords
 
 scale progression:
 list of scales

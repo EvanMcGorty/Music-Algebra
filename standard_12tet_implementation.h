@@ -1,5 +1,6 @@
 #include<array>
 #include"note_name.h"
+#include<assert.h>
 
 
 class int_accidental_count
@@ -21,10 +22,10 @@ public:
     }
 };
 
+using int_interval_length = int;
+
 class standard_7_note_letter
 {
-
-
 private:
 
     static constexpr std::array<char,7> ascending_fifths()
@@ -38,7 +39,7 @@ public:
 
     standard_7_note_letter(char a) : val(a) {}
 
-    basic_interval diatonic_distance_above(standard_7_note_letter a) const
+    basic_interval<int_interval_length> diatonic_distance_above(standard_7_note_letter a) const
     {
         if(val>=a.val)
         {
@@ -67,9 +68,10 @@ public:
                 return int_accidental_count(-1);
             }
         }
+        assert(false); return int_accidental_count{0};
     }
 
-    standard_7_note_letter shifted_up_by(basic_interval a) const
+    standard_7_note_letter shifted_up_by(basic_interval<int_interval_length> a) const
     {
         int distance = a.length;
         while(distance<0)
@@ -90,8 +92,8 @@ public:
 
 };
 
-using basic_note_name = note_name<int_accidental_count,standard_7_note_letter>;
-using basic_pure_interval = pure_interval<int_accidental_count>;
+using basic_note_name = note_name<int_accidental_count,int,standard_7_note_letter>;
+using basic_pure_interval = pure_interval<int_accidental_count,int>;
 
 constexpr int_accidental_count flat(-2);
 constexpr int_accidental_count natural(0);
@@ -110,4 +112,6 @@ void test()
     basic_pure_interval zy = z/y;
 
     basic_note_name t = x/zy;
+
+    char test;
 }
