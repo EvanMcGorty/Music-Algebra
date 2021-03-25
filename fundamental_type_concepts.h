@@ -1,8 +1,9 @@
-
 #include<concepts>
 
 
 //concepts for core types that need to be implemented for a musical system to work with this library
+
+
 
 
 //a number type to represent a basic interval distance

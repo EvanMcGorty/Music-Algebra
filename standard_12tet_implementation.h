@@ -1,6 +1,6 @@
 #include<array>
 #include"notes_and_intervals.h"
-#include<assert.h>
+#include<cassert>
 
 
 class int_accidental_count
@@ -9,7 +9,12 @@ class int_accidental_count
     //1 count is the accidental interval between two notes in the same key, sort of like a half sharp, but only for intervals.
     int count;
 public:
-    explicit constexpr int_accidental_count(int a) : count(a) {}
+    constexpr int_accidental_count(int a) : count(a) {}
+
+    constexpr operator int()
+    {
+        return count;
+    }
 
     constexpr int_accidental_count operator+(int_accidental_count rhs) const
     {
@@ -22,7 +27,27 @@ public:
     }
 };
 
-using int_interval_length = int;
+class int_interval_length
+{
+    int count;
+public:
+    constexpr int_interval_length(int a) : count(a) {}
+
+    constexpr operator int()
+    {
+        return count;
+    }
+
+    constexpr int_interval_length operator+(int_interval_length rhs) const
+    {
+        return int_interval_length{count+rhs.count};
+    }
+
+    constexpr int_interval_length operator-() const
+    {
+        return int_interval_length{-count};
+    }
+};
 
 class standard_7_note_letter
 {
@@ -37,21 +62,21 @@ private:
 
 public:
 
-    standard_7_note_letter(char a) : val(a) {}
+    constexpr standard_7_note_letter(char a) : val(a) {}
 
-    basic_interval<int_interval_length> diatonic_distance_above(standard_7_note_letter a) const
+    constexpr basic_interval<int_interval_length> diatonic_distance_above(standard_7_note_letter a) const
     {
         if(val>=a.val)
         {
-            return basic_interval{val-a.val};
+            return basic_interval{int_interval_length{val-a.val}};
         }
         else
         {
-            return basic_interval{(val-a.val)+7};
+            return basic_interval{int_interval_length{(val-a.val)+7}};
         }
     }
 
-    int_accidental_count accidental_difference_from(standard_7_note_letter tar) const
+    constexpr int_accidental_count accidental_difference_from(standard_7_note_letter tar) const
     {
         for(size_t i=0;i!=ascending_fifths().size();++i)
         {
@@ -68,12 +93,12 @@ public:
                 return int_accidental_count(-1);
             }
         }
-        assert(false); return int_accidental_count{0};
+        return int_accidental_count{-5000}; //error
     }
 
-    standard_7_note_letter shifted_up_by(basic_interval<int_interval_length> a) const
+    constexpr standard_7_note_letter shifted_up_by(basic_interval<int_interval_length> a) const
     {
-        int distance = a.length;
+        int distance = int(a.length);
         while(distance<0)
         {
             distance+=7;
@@ -92,8 +117,8 @@ public:
 
 };
 
-using basic_note_name = note_name<int_accidental_count,int,standard_7_note_letter>;
-using basic_pure_interval = pure_interval<int_accidental_count,int>;
+using basic_note_name = note_name<int_interval_length,int_accidental_count,standard_7_note_letter>;
+using basic_pure_interval = pure_interval<int_interval_length,int_accidental_count>;
 
 constexpr int_accidental_count flat(-2);
 constexpr int_accidental_count natural(0);
