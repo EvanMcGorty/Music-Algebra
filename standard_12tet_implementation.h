@@ -3,51 +3,11 @@
 #include<cassert>
 
 
-class int_accidental_count
-{
-    //every 2 of count is 1 sharp or flat.
-    //1 count is the accidental interval between two notes in the same key, sort of like a half sharp, but only for intervals.
-    int count;
-public:
-    constexpr int_accidental_count(int a) : count(a) {}
+using int_accidental_count = int;
 
-    constexpr operator int()
-    {
-        return count;
-    }
+using int_interval_length = int;
 
-    constexpr int_accidental_count operator+(int_accidental_count rhs) const
-    {
-        return int_accidental_count{count+rhs.count};
-    }
-
-    constexpr int_accidental_count operator-() const
-    {
-        return int_accidental_count{-count};
-    }
-};
-
-class int_interval_length
-{
-    int count;
-public:
-    constexpr int_interval_length(int a) : count(a) {}
-
-    constexpr operator int()
-    {
-        return count;
-    }
-
-    constexpr int_interval_length operator+(int_interval_length rhs) const
-    {
-        return int_interval_length{count+rhs.count};
-    }
-
-    constexpr int_interval_length operator-() const
-    {
-        return int_interval_length{-count};
-    }
-};
+using int_exact_distance = int;
 
 class standard_7_note_letter
 {
@@ -121,8 +81,8 @@ using ttet_accidental = accidental<int_accidental_count>;
 using ttet_note_letter = note_letter<int_interval_length,int_accidental_count,standard_7_note_letter>;
 using ttet_note_name = note_name<int_interval_length,int_accidental_count,standard_7_note_letter>;
 using ttet_pure_interval = pure_interval<int_interval_length,int_accidental_count>;
-using ttet_ratio_interval = ratio_interval<int>;
-using ttet_exact_interval = exact_interval<int_interval_length,int_accidental_count,int,unsigned char>;
+using ttet_ratio_interval = ratio_interval<int_exact_distance>;
+using ttet_exact_interval = exact_interval<int_interval_length,int_accidental_count,int_exact_distance>;
 
 constexpr ttet_accidental flat(-2);
 constexpr ttet_accidental natural(0);
@@ -144,7 +104,7 @@ void test()
     ttet_pure_interval yz = y/z;
     ttet_pure_interval zy = z/y;
 
-    ttet_exact_interval xye{xy,ttet_ratio_interval{7},ratio_interval<unsigned char>{'a'}};
+    ttet_exact_interval xye{xy,ttet_ratio_interval{7}};
     xye.index_ratio<0>();
 
     ttet_note_name t = x/zy;
