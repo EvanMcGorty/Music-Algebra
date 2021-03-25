@@ -1,19 +1,20 @@
 #include"fundamental_type_concepts.h"
+#include<assert.h>
 
 template<typename t>
 concept interval = requires (t const& a)
 {
-    {a*a} -> std::same_as<t>;
-    {a/a} -> std::same_as<t>;
-    {a.inverted()} -> std::same_as<t>;
+    {a*a} -> std::convertible_to<t>;
+    {a/a} -> std::convertible_to<t>;
+    {a.inverted()} -> std::convertible_to<t>;
 };
 
 template<typename t>
 concept note = requires (t const& a)
 {
     {a/a} -> interval;
-    {a*(a/a)} -> std::same_as<t>;
-    {a/(a/a)} -> std::same_as<t>;
+    {a*(a/a)} -> std::convertible_to<t>;
+    {a/(a/a)} -> std::convertible_to<t>;
 };
 
 //interval between note names, e.g. a third, a fifth, a second, not something like a major third or a minor seventh.
@@ -21,10 +22,14 @@ concept note = requires (t const& a)
 template<interval_count_num interval_length_t>
 struct basic_interval
 {
-
     interval_length_t length;
 
-    constexpr explicit basic_interval(interval_length_t a) : length(a){}
+    constexpr explicit basic_interval(interval_length_t const& a) : length(a){}
+    
+    constexpr explicit operator interval_length_t() const
+    {
+        return length;
+    }
 
     constexpr basic_interval operator*(basic_interval const& rhs) const
     {
@@ -79,7 +84,7 @@ struct accidental
     
     constexpr explicit accidental(accidental_count_t const& a) : accidental_count(a) {}
 
-    constexpr explicit operator accidental_count_t()
+    constexpr explicit operator accidental_count_t() const
     {
         return accidental_count;
     }
@@ -95,8 +100,6 @@ struct pure_interval
 	basic_interval<interval_length_t> diatonic_distance;
 	accidental_count_t accidental_distance;
 
-    constexpr explicit pure_interval(basic_interval<interval_length_t> const& a, accidental_count_t const& b)
-    : diatonic_distance(a), accidental_distance(b) {}
 
     constexpr pure_interval(basic_interval<interval_length_t> const& a, accidental<accidental_count_t> const& b)
     : diatonic_distance(a), accidental_distance(accidental_count_t(b)) {}
@@ -114,25 +117,28 @@ struct pure_interval
     {
         return pure_interval(diatonic_distance.inverted(),-accidental_distance);
     }
+
+private:
+    constexpr explicit pure_interval(basic_interval<interval_length_t> const& a, accidental_count_t const& b)
+    : diatonic_distance(a), accidental_distance(b) {}
 };
 
 //a note in its mathematically purest form.
 //indicates diatonic position as well as its accidental.
-template<interval_count_num interval_length_t, accidental_count_num accidental_count_t, note_letter_holder<accidental_count_t,basic_interval<interval_length_t>> letter_t>
+template<
+    interval_count_num interval_length_t, accidental_count_num accidental_count_t, 
+    note_letter_holder<accidental_count_t,basic_interval<interval_length_t>> letter_t>
 struct note_name
 {
     letter_t letter;
     accidental_count_t accidental_count;
-
-    constexpr explicit note_name(letter_t const& a, accidental_count_t const& b) 
-    : letter(a), accidental_count(b) {}
 
     constexpr note_name(note_letter<interval_length_t,accidental_count_t,letter_t> const& a, accidental<accidental_count_t> const& b) 
     : letter(letter_t(a)), accidental_count(accidental_count_t(b)) {}
 
     constexpr pure_interval<interval_length_t,accidental_count_t> operator/(note_name const& rhs) const
     {
-        return pure_interval(letter.diatonic_distance_above(rhs.letter),letter.accidental_difference_from(rhs.letter)+(accidental_count+(-rhs.accidental_count)));
+        return pure_interval(basic_interval{letter.diatonic_distance_above(rhs.letter)},accidental{letter.accidental_difference_from(rhs.letter)+(accidental_count+(-rhs.accidental_count))});
     }
 
     constexpr note_name operator*(pure_interval<interval_length_t,accidental_count_t> const& rhs) const
@@ -145,4 +151,200 @@ struct note_name
     {
         return this->operator*(rhs.inverted());
     }
+
+private:
+    constexpr explicit note_name(letter_t const& a, accidental_count_t const& b) 
+    : letter(a), accidental_count(b) {}
+};
+
+
+
+template<exact_distance_num exact_distance_t>
+struct ratio_interval
+{
+
+    exact_distance_t distance;
+
+    constexpr explicit ratio_interval(exact_distance_t const& a) : distance(a){}
+
+    constexpr explicit operator exact_distance_t() const
+    {
+        return distance;
+    }
+
+    constexpr ratio_interval operator*(ratio_interval const& rhs) const
+    {
+        return ratio_interval{distance+rhs.distance};
+    }
+
+    constexpr ratio_interval operator/(ratio_interval const& rhs) const
+    {
+        return ratio_interval{distance+(-rhs.distance)};
+    }
+
+    constexpr ratio_interval inverted() const
+    {
+        return ratio_interval{-distance};
+    }
+
+};
+
+/*
+template<interval_count_num interval_length_t, accidental_count_num accidental_count_t, exact_distance_num exact_distance_t>
+struct exact_interval
+{
+    pure_interval<interval_length_t,accidental_count_t> pure_distance;
+    ratio_interval<exact_distance_t> ratio_distance;
+
+    constexpr exact_interval(pure_interval<interval_length_t,accidental_count_t> a,ratio_interval<exact_distance_t> b) : pure_distance(a), ratio_distance(b) {}
+
+    constexpr exact_interval operator*(exact_interval const& rhs) const
+    {
+        return {pure_distance*rhs.pure_distance,ratio_distance*rhs.ratio_distance};
+    }
+    
+    constexpr exact_interval operator/(exact_interval const& rhs) const
+    {
+        return {pure_distance/rhs.pure_distance,ratio_distance/rhs.ratio_distance};
+    }
+
+    constexpr exact_interval inverted() const
+    {
+        return {pure_distance.inverted(),ratio_distance.inverted()};
+    }
+
+};
+*/
+
+template<interval first_t, interval second_t>
+struct multiple_interval
+{
+    first_t first;
+    second_t second;
+
+    constexpr multiple_interval(first_t a,second_t b) : first(a), second(b) {}
+
+    constexpr multiple_interval operator*(multiple_interval const& rhs) const
+    {
+        return {first*rhs.first,second*rhs.second};
+    }
+    
+    constexpr multiple_interval operator/(multiple_interval const& rhs) const
+    {
+        return {first/rhs.first,second/rhs.second};
+    }
+
+    constexpr multiple_interval inverted() const
+    {
+        return {first.inverted(),second.inverted()};
+    }
+};
+
+
+template<interval_count_num interval_length_t, accidental_count_num accidental_count_t, exact_distance_num exact_distance_t, exact_distance_num...exact_distance_ts >
+struct exact_interval
+    : public multiple_interval<
+        ratio_interval<exact_distance_t>,
+        exact_interval<interval_length_t,accidental_count_t,exact_distance_ts...>
+    >
+{
+
+    constexpr exact_interval(pure_interval<interval_length_t,accidental_count_t> const& a, ratio_interval<exact_distance_t> const& b, ratio_interval<exact_distance_ts> const&...rest)
+    : multiple_interval<ratio_interval<exact_distance_t>,exact_interval<interval_length_t,accidental_count_t,exact_distance_ts...>>
+    (b,exact_interval<interval_length_t,accidental_count_t,exact_distance_ts...>{a,rest...}) {}
+
+    constexpr exact_interval(multiple_interval<ratio_interval<exact_distance_t>,exact_interval<interval_length_t,accidental_count_t,exact_distance_ts...>> const& a)
+    : multiple_interval<ratio_interval<exact_distance_t>,exact_interval<interval_length_t,accidental_count_t,exact_distance_ts...>>
+    (a.first,a.second) {}
+
+    constexpr exact_interval<interval_length_t,accidental_count_t,exact_distance_ts...> next() const
+    {
+        return
+        multiple_interval<ratio_interval<exact_distance_t>,exact_interval<interval_length_t,accidental_count_t,exact_distance_ts...>>
+        ::second;
+    }
+
+    template<size_t index>
+    constexpr ratio_interval<exact_distance_t> index_ratio() const
+    {
+        if constexpr (index==0)
+        {
+            return 
+            multiple_interval<ratio_interval<exact_distance_t>,exact_interval<interval_length_t,accidental_count_t,exact_distance_ts...>>
+            ::first;
+        }
+        else
+        {
+            return 
+            multiple_interval<ratio_interval<exact_distance_t>,exact_interval<interval_length_t,accidental_count_t,exact_distance_ts...>>
+            ::second.template index_ratio<index-1>();
+        }
+    }
+
+    ratio_interval<exact_distance_t> index_ratio_runtime(size_t index) const
+    {
+        if (index==0)
+        {
+            return  
+            multiple_interval<ratio_interval<exact_distance_t>,exact_interval<interval_length_t,accidental_count_t,exact_distance_ts...>>
+            ::first;
+        }
+        else
+        {
+            return  
+            multiple_interval<ratio_interval<exact_distance_t>,exact_interval<interval_length_t,accidental_count_t,exact_distance_ts...>>
+            ::second.index_ratio_runtime(index-1);
+        }
+    }
+};
+
+template<interval_count_num interval_length_t, accidental_count_num accidental_count_t, exact_distance_num exact_distance_t>
+struct exact_interval<interval_length_t,accidental_count_t,exact_distance_t>
+    : public multiple_interval<ratio_interval<exact_distance_t>,pure_interval<interval_length_t,accidental_count_t>>
+{
+
+    constexpr exact_interval(pure_interval<interval_length_t,accidental_count_t> const& a, ratio_interval<exact_distance_t> const& b)
+    : multiple_interval<ratio_interval<exact_distance_t>,pure_interval<interval_length_t,accidental_count_t>>
+    (b,a) {}
+
+    constexpr exact_interval(multiple_interval<ratio_interval<exact_distance_t>,pure_interval<interval_length_t,accidental_count_t>> const& a)
+    : multiple_interval<ratio_interval<exact_distance_t>,pure_interval<interval_length_t,accidental_count_t>>
+    (a.first,a.second) {}
+
+    constexpr pure_interval<interval_length_t,accidental_count_t> pure_distance() const
+    {
+        return 
+        multiple_interval<ratio_interval<exact_distance_t>,pure_interval<interval_length_t,accidental_count_t>>
+        ::second;
+    }
+
+    template<size_t index>
+    constexpr ratio_interval<exact_distance_t> index_ratio() const
+    {
+        static_assert(index==0,"exact_interval indexed for a ratio interval too deep");
+        return
+        multiple_interval<ratio_interval<exact_distance_t>,pure_interval<interval_length_t,accidental_count_t>>
+        ::first;
+    }
+
+    ratio_interval<exact_distance_t> index_ratio_runtime(size_t index) const
+    {
+        assert(index==0); //exact_interval indexed for a ratio interval too deep
+        return 
+        multiple_interval<ratio_interval<exact_distance_t>,pure_interval<interval_length_t,accidental_count_t>>
+        ::first;
+    }
+};
+
+
+template<
+    interval_count_num interval_length_t, accidental_count_num accidental_count_t,
+    note_letter_holder<accidental_count_t,basic_interval<interval_length_t>> letter_t,
+    exact_distance_num exact_distance_t, exact_frequency_num<exact_distance_t> exact_frequency_t>
+struct exact_note
+{
+    note_name<interval_length_t,accidental_count_t,letter_t> name;
+
+
+
 };

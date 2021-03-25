@@ -117,26 +117,39 @@ public:
 
 };
 
-using basic_note_name = note_name<int_interval_length,int_accidental_count,standard_7_note_letter>;
-using basic_pure_interval = pure_interval<int_interval_length,int_accidental_count>;
+using ttet_accidental = accidental<int_accidental_count>;
+using ttet_note_letter = note_letter<int_interval_length,int_accidental_count,standard_7_note_letter>;
+using ttet_note_name = note_name<int_interval_length,int_accidental_count,standard_7_note_letter>;
+using ttet_pure_interval = pure_interval<int_interval_length,int_accidental_count>;
+using ttet_ratio_interval = ratio_interval<int>;
+using ttet_exact_interval = exact_interval<int_interval_length,int_accidental_count,int,unsigned char>;
 
-constexpr int_accidental_count flat(-2);
-constexpr int_accidental_count natural(0);
-constexpr int_accidental_count sharp(2);
+constexpr ttet_accidental flat(-2);
+constexpr ttet_accidental natural(0);
+constexpr ttet_accidental sharp(2);
+
+
 
 void test()
 {
-    basic_note_name x{'a',natural};
-    basic_note_name y{'c',natural};
-    basic_note_name z{'e',natural};
-    basic_pure_interval xy = x/y;
-    basic_pure_interval yx = y/x;
-    basic_pure_interval xz = x/z;
-    basic_pure_interval zx = z/x;
-    basic_pure_interval yz = y/z;
-    basic_pure_interval zy = z/y;
 
-    basic_note_name t = x/zy;
+    //standard_7_note_letter la{'a'};
+    ttet_note_name x{ttet_note_letter{'a'},natural};
+    ttet_note_name y{ttet_note_letter{'c'},natural};
+    ttet_note_name z{ttet_note_letter{'e'},natural};
+    ttet_pure_interval xy = x/y;
+    ttet_pure_interval yx = y/x;
+    ttet_pure_interval xz = x/z;
+    ttet_pure_interval zx = z/x;
+    ttet_pure_interval yz = y/z;
+    ttet_pure_interval zy = z/y;
+
+    ttet_exact_interval xye{xy,ttet_ratio_interval{7},ratio_interval<unsigned char>{'a'}};
+
+    ttet_note_name t = x/zy;
+
+
+
 
     char test;
 }
