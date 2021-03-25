@@ -265,7 +265,7 @@ struct exact_interval
     }
 
     template<size_t index>
-    constexpr ratio_interval<exact_distance_t> index_ratio() const
+    constexpr interval auto index_ratio() const
     {
         if constexpr (index==0)
         {
@@ -278,22 +278,6 @@ struct exact_interval
             return 
             multiple_interval<ratio_interval<exact_distance_t>,exact_interval<interval_length_t,accidental_count_t,exact_distance_ts...>>
             ::second.template index_ratio<index-1>();
-        }
-    }
-
-    ratio_interval<exact_distance_t> index_ratio_runtime(size_t index) const
-    {
-        if (index==0)
-        {
-            return  
-            multiple_interval<ratio_interval<exact_distance_t>,exact_interval<interval_length_t,accidental_count_t,exact_distance_ts...>>
-            ::first;
-        }
-        else
-        {
-            return  
-            multiple_interval<ratio_interval<exact_distance_t>,exact_interval<interval_length_t,accidental_count_t,exact_distance_ts...>>
-            ::second.index_ratio_runtime(index-1);
         }
     }
 };
@@ -323,14 +307,6 @@ struct exact_interval<interval_length_t,accidental_count_t,exact_distance_t>
     {
         static_assert(index==0,"exact_interval indexed for a ratio interval too deep");
         return
-        multiple_interval<ratio_interval<exact_distance_t>,pure_interval<interval_length_t,accidental_count_t>>
-        ::first;
-    }
-
-    ratio_interval<exact_distance_t> index_ratio_runtime(size_t index) const
-    {
-        assert(index==0); //exact_interval indexed for a ratio interval too deep
-        return 
         multiple_interval<ratio_interval<exact_distance_t>,pure_interval<interval_length_t,accidental_count_t>>
         ::first;
     }

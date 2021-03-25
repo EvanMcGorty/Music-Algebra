@@ -145,6 +145,7 @@ void test()
     ttet_pure_interval zy = z/y;
 
     ttet_exact_interval xye{xy,ttet_ratio_interval{7},ratio_interval<unsigned char>{'a'}};
+    xye.index_ratio<0>();
 
     ttet_note_name t = x/zy;
 
