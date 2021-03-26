@@ -12,9 +12,8 @@ namespace twt
 
     using int_exact_distance = int;
 
-    class standard_7_note_letter
+    struct standard_7_note_letter
     {
-    private:
 
         static constexpr std::array<char,7> ascending_fifths()
         {
@@ -22,8 +21,6 @@ namespace twt
         }
 
         char val;
-
-    public:
 
         constexpr standard_7_note_letter(char a) : val(a) {}
 
@@ -80,6 +77,25 @@ namespace twt
 
     };
 
+    template<char letter_v, int accidental_v>
+    struct float_frequency
+    {
+        float freq;
+        
+        constexpr float_frequency(float a) : freq(a) {}
+
+        constexpr standard_7_note_letter get_note_letter() const
+        {
+            return standard_7_note_letter{letter_v};
+        }
+        
+        constexpr int_accidental_count get_note_accidental() const
+        {
+            return int_accidental_count{accidental_v};
+        }
+
+    };
+
     using basic_interval = ma::basic_interval<int_interval_length>;
     using accidental = ma::accidental<int_accidental_count>;
     using note_letter = ma::note_letter<int_interval_length,int_accidental_count,standard_7_note_letter>;
@@ -87,13 +103,13 @@ namespace twt
     using pure_interval = ma::pure_interval<int_interval_length,int_accidental_count>;
     using ratio_interval = ma::ratio_interval<int_exact_distance>;
     using exact_interval = ma::exact_interval<int_interval_length,int_accidental_count,int_exact_distance>;
+    using exact_note = ma::exact_note<int_interval_length,int_accidental_count,standard_7_note_letter,float_frequency<'a',0>,exact_interval>;
 
     constexpr accidental flat{-2}, natural{0}, sharp{2};
     //constexpr accidental natural(0);
     //constexpr accidental sharp(2);
 
     constexpr note_letter a{'a'}, b{'b'}, c{'c'}, d{'d'}, e{'e'}, f{'f'}, g{'g'};
-
 
 }
 

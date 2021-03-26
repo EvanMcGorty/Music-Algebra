@@ -32,8 +32,9 @@ namespace ma
     //can be multiplied by a basic_interval to shift it up by that interval
     template<typename t, typename accidental_t, typename interval_t>
     concept note_letter_holder = 
-        std::copy_constructible<t>
+        interval_count_num<interval_t>
         && accidental_count_num<accidental_t>
+        && std::copy_constructible<t>
         && requires (t const& a, interval_t const& b)
     {
         {a.diatonic_distance_above(a)} -> std::convertible_to<interval_t>; //should preferably only return positive intervals
@@ -53,15 +54,17 @@ namespace ma
     };
 
 
-    //an exact frequency
-    template<typename t, typename exact_distance_t>
-    concept exact_frequency_num = 
-        std::copy_constructible<t>
-        && exact_distance_num<exact_distance_t>
-        && requires (t const& a, exact_distance_t const& b)
+    //an exact note that acts as a relative anchor note for exact_notes (i.e. a 440 hertz or C4)
+    template<typename t, typename letter_t, typename accidental_t, typename interval_t>
+    concept anchor_note = 
+        interval_count_num<interval_t>
+        && accidental_count_num<accidental_t>
+        && note_letter_holder<letter_t,accidental_t,interval_t>
+        && std::copy_constructible<t>
+        && requires (t const& a)
     {
-        {a.exact_distance_above(a)} -> std::convertible_to<exact_distance_t>;
-        {a.shifted_up_by(b)} -> std::convertible_to<t>;
+        {a.get_note_letter()} -> std::convertible_to<letter_t>;
+        {a.get_note_accidental()} -> std::convertible_to<accidental_t>;
     };
 
 

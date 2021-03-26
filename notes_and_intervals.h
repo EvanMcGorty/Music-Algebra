@@ -293,11 +293,13 @@ namespace ma
     template<
         interval_count_num interval_length_t, accidental_count_num accidental_count_t,
         note_letter_holder<accidental_count_t,interval_length_t> letter_t,
-        exact_distance_num exact_distance_t, exact_frequency_num<exact_distance_t> exact_frequency_t>
+        anchor_note<letter_t,accidental_count_t,interval_length_t> anchor_t, interval exact_interval_t>
     struct exact_note
     {
         note_name<interval_length_t,accidental_count_t,letter_t> name;
+        anchor_t anchor;
 
+        exact_note(note_name<interval_length_t,accidental_count_t,letter_t> a, anchor_t b) : name(a), anchor(b) {}
         
         
     };
