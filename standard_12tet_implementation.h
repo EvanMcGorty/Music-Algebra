@@ -12,6 +12,21 @@ namespace twt
 
     using int_exact_distance = int;
 
+}
+
+namespace ma
+{
+    template<> twt::int_accidental_count zero_accidental<twt::int_accidental_count>() {return twt::int_accidental_count{0};}
+
+    template<> twt::int_interval_length zero_interval<twt::int_interval_length>() {return twt::int_interval_length{0};}
+
+    template<> twt::int_exact_distance zero_distance<twt::int_exact_distance>() {return twt::int_exact_distance{0};}
+
+}
+
+namespace twt
+{
+
     struct standard_7_note_letter
     {
 
@@ -53,6 +68,7 @@ namespace twt
                     return int_accidental_count(-1);
                 }
             }
+            abort();
             return int_accidental_count{-5000}; //error
         }
 
@@ -77,12 +93,23 @@ namespace twt
 
     };
 
-    template<char letter_v, int accidental_v>
-    struct float_frequency
+    using basic_interval = ma::basic_interval<int_interval_length>;
+    using accidental = ma::accidental<int_accidental_count>;
+    using note_letter = ma::note_letter<int_interval_length,int_accidental_count,standard_7_note_letter>;
+    using note_name = ma::note_name<int_interval_length,int_accidental_count,standard_7_note_letter>;
+    using pure_interval = ma::pure_interval<int_interval_length,int_accidental_count>;
+    using ratio_interval = ma::ratio_interval<int_exact_distance>;
+    using exact_interval = ma::exact_interval<int_interval_length,int_accidental_count,int_exact_distance>;
+
+
+    template<typename exact_interval_t, char letter_v, int accidental_v, unsigned int freq_num, unsigned int freq_den>
+    struct fractional_frequency_anchor
     {
-        float freq;
-        
-        constexpr float_frequency(float a) : freq(a) {}
+
+        constexpr float frequency()
+        {
+            return freq_num/freq_den;
+        }
 
         constexpr standard_7_note_letter get_note_letter() const
         {
@@ -94,16 +121,19 @@ namespace twt
             return int_accidental_count{accidental_v};
         }
 
+        constexpr exact_interval_t adjusted_to(fractional_frequency_anchor const& a, exact_interval_t const& b) const
+        {
+            if(frequency()!=a.frequency())
+            {
+                abort(); //exact_interval_t with a fractional_frequency_anchor cannot operate with a changing frequency anchor
+            }
+            return b;
+        }
+
     };
 
-    using basic_interval = ma::basic_interval<int_interval_length>;
-    using accidental = ma::accidental<int_accidental_count>;
-    using note_letter = ma::note_letter<int_interval_length,int_accidental_count,standard_7_note_letter>;
-    using note_name = ma::note_name<int_interval_length,int_accidental_count,standard_7_note_letter>;
-    using pure_interval = ma::pure_interval<int_interval_length,int_accidental_count>;
-    using ratio_interval = ma::ratio_interval<int_exact_distance>;
-    using exact_interval = ma::exact_interval<int_interval_length,int_accidental_count,int_exact_distance>;
-    using exact_note = ma::exact_note<int_interval_length,int_accidental_count,standard_7_note_letter,float_frequency<'a',0>,exact_interval>;
+    using anchor = fractional_frequency_anchor<exact_interval,'a',0,440,1>;
+    using exact_note = ma::exact_note<int_interval_length,int_accidental_count,standard_7_note_letter,exact_interval,anchor>;
 
     constexpr accidental flat{-2}, natural{0}, sharp{2};
     //constexpr accidental natural(0);
@@ -115,6 +145,7 @@ namespace twt
 
 void test()
 {
+    twt::anchor const anchor;
 
     //standard_7_note_letter la{'a'};
     twt::note_name x{twt::a,twt::natural};
@@ -130,7 +161,7 @@ void test()
     twt::exact_interval xye{xy,twt::ratio_interval{7}};
     xye.index_ratio<0>();
 
-    twt::note_name t = x/zy;
+    twt::exact_note t{x/zy,anchor};
 
 
 

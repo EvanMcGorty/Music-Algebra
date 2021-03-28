@@ -5,15 +5,20 @@ namespace ma
 {
 
     template<typename t>
-    concept interval = requires (t const& a)
+    concept interval = 
+    std::copy_constructible<t>
+    && requires (t const& a)
     {
         {a*a} -> std::convertible_to<t>;
         {a/a} -> std::convertible_to<t>;
         {a.inverted()} -> std::convertible_to<t>;
+        {t::zero()} -> std::same_as<t>;
     };
 
     template<typename t>
-    concept note = requires (t const& a)
+    concept note =
+    std::copy_constructible<t>
+    && requires (t const& a)
     {
         {a/a} -> interval;
         {a*(a/a)} -> std::convertible_to<t>;
@@ -28,6 +33,11 @@ namespace ma
         interval_length_t length;
 
         constexpr explicit basic_interval(interval_length_t const& a) : length(a){}
+
+        constexpr basic_interval zero() 
+        {
+            return basic_interval{zero_interval<interval_length_t>()};
+        }
         
         constexpr explicit operator interval_length_t() const
         {
@@ -92,6 +102,11 @@ namespace ma
             return accidental_count;
         }
 
+        static constexpr accidental zero()
+        {
+            return accidental{zero_accidental<accidental_count_t>()};
+        }
+
     };
 
     //an interval in its mathematically purest form.
@@ -106,6 +121,11 @@ namespace ma
 
         constexpr pure_interval(basic_interval<interval_length_t> const& a, accidental<accidental_count_t> const& b)
         : diatonic_distance(a), accidental_distance(accidental_count_t(b)) {}
+
+        static constexpr pure_interval zero() 
+        {
+            return pure_interval{basic_interval<interval_length_t>::zero(),accidental<accidental_count_t>::zero()};
+        }
 
         constexpr pure_interval operator*(pure_interval const& rhs) const
         {
@@ -175,6 +195,12 @@ namespace ma
             return distance;
         }
 
+        static constexpr ratio_interval zero() 
+        {
+            return ratio_interval{zero_distance<exact_distance_t>()};
+        }
+        
+
         constexpr ratio_interval operator*(ratio_interval const& rhs) const
         {
             return ratio_interval{distance+rhs.distance};
@@ -200,6 +226,11 @@ namespace ma
         second_t second;
 
         constexpr multiple_interval(first_t a,second_t b) : first(a), second(b) {}
+
+        static constexpr multiple_interval zero()
+        {
+            return multiple_interval{first_t::zero(),second_t::zero()};
+        }
 
         constexpr multiple_interval operator*(multiple_interval const& rhs) const
         {
@@ -233,6 +264,16 @@ namespace ma
         constexpr exact_interval(multiple_interval<ratio_interval<exact_distance_t>,exact_interval<interval_length_t,accidental_count_t,exact_distance_ts...>> const& a)
         : multiple_interval<ratio_interval<exact_distance_t>,exact_interval<interval_length_t,accidental_count_t,exact_distance_ts...>>
         (a.first,a.second) {}
+
+        constexpr exact_interval(pure_interval<interval_length_t,accidental_count_t> const& a)
+        : multiple_interval<ratio_interval<exact_distance_t>,exact_interval<interval_length_t,accidental_count_t,exact_distance_ts...>>
+        (ratio_interval<exact_distance_t>::zero(),a) {}
+
+        static constexpr exact_interval zero()
+        {
+            return exact_interval{ratio_interval<exact_distance_t>::zero(),exact_interval<interval_length_t,accidental_count_t,exact_distance_ts...>::zero()};
+        }
+
 
         constexpr exact_interval<interval_length_t,accidental_count_t,exact_distance_ts...> next() const
         {
@@ -272,7 +313,17 @@ namespace ma
         : multiple_interval<ratio_interval<exact_distance_t>,pure_interval<interval_length_t,accidental_count_t>>
         (a.first,a.second) {}
 
-        constexpr pure_interval<interval_length_t,accidental_count_t> pure_distance() const
+        explicit constexpr exact_interval(pure_interval<interval_length_t,accidental_count_t> const& a)
+        : multiple_interval<ratio_interval<exact_distance_t>,pure_interval<interval_length_t,accidental_count_t>>
+        (ratio_interval<exact_distance_t>::zero(),a) {}
+
+        static constexpr exact_interval zero()
+        {
+            return exact_interval{ratio_interval<exact_distance_t>::zero(),pure_interval<interval_length_t,accidental_count_t>::zero()};
+        }
+
+
+        constexpr pure_interval<interval_length_t,accidental_count_t> get_pure_interval() const
         {
             return 
             multiple_interval<ratio_interval<exact_distance_t>,pure_interval<interval_length_t,accidental_count_t>>
@@ -293,14 +344,58 @@ namespace ma
     template<
         interval_count_num interval_length_t, accidental_count_num accidental_count_t,
         note_letter_holder<accidental_count_t,interval_length_t> letter_t,
-        anchor_note<letter_t,accidental_count_t,interval_length_t> anchor_t, interval exact_interval_t>
+        interval exact_interval_t,
+        anchor_note<letter_t,accidental_count_t,interval_length_t,exact_interval_t> anchor_t>
+        requires requires (exact_interval_t const& a)
+        {
+            {a.get_pure_interval()} -> std::convertible_to<pure_interval<interval_length_t,accidental_count_t>>;
+        }
     struct exact_note
     {
-        note_name<interval_length_t,accidental_count_t,letter_t> name;
+        //note_name<interval_length_t,accidental_count_t,letter_t> name;
+
+        exact_interval_t distance; //from anchor
         anchor_t anchor;
 
-        exact_note(note_name<interval_length_t,accidental_count_t,letter_t> a, anchor_t b) : name(a), anchor(b) {}
+        constexpr exact_note(exact_interval_t const& a, anchor_t const& b) : distance(a), anchor(b) {}
+
+        constexpr exact_note(note_name<interval_length_t,accidental_count_t,letter_t> const& a, anchor_t const& b)
+            : distance(
+            exact_interval_t{a/note_name<interval_length_t,accidental_count_t,letter_t>{
+                note_letter<interval_length_t,accidental_count_t,letter_t>{b.get_note_letter()},
+                accidental<accidental_count_t>{b.get_note_accidental()}
+                }})
+            , anchor(b) {}
         
+        constexpr exact_note operator*(exact_interval_t const& rhs) const
+        {
+            return exact_note{distance*rhs,anchor};
+        }
+
+        constexpr exact_note operator/(exact_interval_t const& rhs) const
+        {
+            return exact_note{distance/rhs,anchor};
+        }
+
+        constexpr exact_note adjust_to_new_anchor(anchor_t const& new_anchor) const
+        {
+            return exact_note{anchor.adjusted_to(new_anchor,distance),new_anchor};
+        }
+
+        constexpr exact_interval_t operator/(exact_note const& rhs) const
+        {
+            return exact_interval_t{anchor.adjusted_to(rhs.anchor,distance)/rhs};
+        }
+
+        constexpr note_name<interval_length_t,accidental_count_t,letter_t> get_anchor_note_name() const
+        {
+            return note_name<interval_length_t,accidental_count_t,letter_t>{anchor.get_note_name,anchor.get_accidental};
+        }
+
+        constexpr note_name<interval_length_t,accidental_count_t,letter_t> get_note_name() const
+        {
+            return get_anchor_note_name()*distance.get_pure_interval();
+        }
         
     };
 
