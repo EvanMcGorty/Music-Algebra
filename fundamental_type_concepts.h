@@ -9,21 +9,21 @@ namespace ma
     template<typename t>
     t zero_interval()
     {
-        return t; //this function should be specialized for this type
+        return; //this function should be specialized for this type
     }
 
     
     template<typename t>
     t zero_accidental()
     {
-        return t; //this function should be specialized for this type
+        return; //this function should be specialized for this type
     }
 
     
     template<typename t>
     t zero_distance()
     {
-        return t; //this function should be specialized for this type
+        return; //this function should be specialized for this type
     }
 
     //a number type to represent a basic interval distance

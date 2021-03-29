@@ -99,7 +99,7 @@ namespace twt
     using note_name = ma::note_name<int_interval_length,int_accidental_count,standard_7_note_letter>;
     using pure_interval = ma::pure_interval<int_interval_length,int_accidental_count>;
     using ratio_interval = ma::ratio_interval<int_exact_distance>;
-    using exact_interval = ma::exact_interval<int_interval_length,int_accidental_count,int_exact_distance>;
+    using exact_interval = ma::exact_interval<int_interval_length,int_accidental_count,int_exact_distance,int_exact_distance>;
 
 
     template<typename exact_interval_t, char letter_v, int accidental_v, unsigned int freq_num, unsigned int freq_den>
@@ -158,11 +158,12 @@ void test()
     twt::pure_interval yz = y/z;
     twt::pure_interval zy = z/y;
 
-    twt::exact_interval xye{xy,twt::ratio_interval{7}};
+    twt::exact_interval xye{xy,twt::ratio_interval{7},twt::ratio_interval{0}};
     xye.index_ratio<0>();
 
     twt::exact_note t{x/zy,anchor};
 
+    using test_type = twt::exact_note::interval_type::ratio_interval_type<1>;
 
 
 

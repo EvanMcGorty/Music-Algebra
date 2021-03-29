@@ -1,5 +1,6 @@
 #include"fundamental_type_concepts.h"
 #include<assert.h>
+#include<utility>
 
 namespace ma
 {
@@ -59,10 +60,20 @@ namespace ma
             return basic_interval{-length};
         }
 
+        using length_number_type = interval_length_t;
+
     };
 
+    template<accidental_count_num accidental_count_t>
+    struct accidental;
 
-    template<interval_count_num interval_length_t, accidental_count_num accidental_count_t, note_letter_holder<accidental_count_t,interval_length_t> letter_t>
+    template<
+        interval_count_num interval_length_t, accidental_count_num accidental_count_t, 
+        note_letter_holder<accidental_count_t,interval_length_t> letter_t>
+    struct note_name;
+
+    template<interval_count_num interval_length_t, accidental_count_num accidental_count_t,
+        note_letter_holder<accidental_count_t,interval_length_t> letter_t>
     struct note_letter
     {
         letter_t letter;
@@ -88,6 +99,11 @@ namespace ma
         {
             return letter.shifted_up_by(rhs.inverted());
         }
+        
+        using interval_type = basic_interval<interval_length_t>;
+        using note_name_type = note_name<interval_length_t, accidental_count_t, letter_t>;
+        using letter_char_type = letter_t;
+
     };
 
     template<accidental_count_num accidental_count_t>
@@ -106,6 +122,8 @@ namespace ma
         {
             return accidental{zero_accidental<accidental_count_t>()};
         }
+
+        using accidental_num_type = accidental_count_t;
 
     };
 
@@ -141,6 +159,11 @@ namespace ma
             return pure_interval(diatonic_distance.inverted(),-accidental_distance);
         }
 
+
+        using basic_interval_type = basic_interval<interval_length_t>;
+        using accidental_type = accidental<accidental_count_t>;
+        
+
     private:
         constexpr explicit pure_interval(basic_interval<interval_length_t> const& a, accidental_count_t const& b)
         : diatonic_distance(a), accidental_distance(b) {}
@@ -174,6 +197,11 @@ namespace ma
         {
             return this->operator*(rhs.inverted());
         }
+
+        
+        using interval_type = pure_interval<interval_length_t,accidental_count_t>;
+        using accidental_type = accidental<accidental_count_t>;
+        using note_letter_type = note_letter<interval_length_t, accidental_count_t, letter_t>;
 
     private:
         constexpr explicit note_name(letter_t const& a, accidental_count_t const& b) 
@@ -216,6 +244,8 @@ namespace ma
             return ratio_interval{-distance};
         }
 
+        using distance_number_type = exact_distance_t;
+
     };
 
 
@@ -248,6 +278,9 @@ namespace ma
         }
     };
 
+    //clang didnt like it when this was defined within exact_interval
+    template<size_t index,typename exact_interval_t>
+    struct ratio_interval_type_holder;
 
     template<interval_count_num interval_length_t, accidental_count_num accidental_count_t, exact_distance_num exact_distance_t, exact_distance_num...exact_distance_ts >
     struct exact_interval
@@ -267,11 +300,13 @@ namespace ma
 
         constexpr exact_interval(pure_interval<interval_length_t,accidental_count_t> const& a)
         : multiple_interval<ratio_interval<exact_distance_t>,exact_interval<interval_length_t,accidental_count_t,exact_distance_ts...>>
-        (ratio_interval<exact_distance_t>::zero(),a) {}
+        (ratio_interval<exact_distance_t>::zero(),exact_interval<interval_length_t,accidental_count_t,exact_distance_ts...>{a}) {}
 
         static constexpr exact_interval zero()
         {
-            return exact_interval{ratio_interval<exact_distance_t>::zero(),exact_interval<interval_length_t,accidental_count_t,exact_distance_ts...>::zero()};
+            return exact_interval{multiple_interval<
+            ratio_interval<exact_distance_t>,exact_interval<interval_length_t,accidental_count_t,exact_distance_ts...>>
+            ::zero()};
         }
 
 
@@ -282,8 +317,22 @@ namespace ma
             ::second;
         }
 
+        constexpr pure_interval<interval_length_t,accidental_count_t> get_pure_interval()
+        {
+            return 
+            multiple_interval<ratio_interval<exact_distance_t>,exact_interval<interval_length_t,accidental_count_t,exact_distance_ts...>>
+            ::second.get_pure_interval();
+        }
+
+        constexpr pure_interval<interval_length_t,accidental_count_t> const get_pure_interval() const
+        {
+            return 
+            multiple_interval<ratio_interval<exact_distance_t>,exact_interval<interval_length_t,accidental_count_t,exact_distance_ts...>>
+            ::second.get_pure_interval();
+        }
+
         template<size_t index>
-        constexpr interval auto index_ratio() const
+        constexpr interval auto& index_ratio()
         {
             if constexpr (index==0)
             {
@@ -298,6 +347,29 @@ namespace ma
                 ::second.template index_ratio<index-1>();
             }
         }
+
+        template<size_t index>
+        constexpr interval auto const& index_ratio() const
+        {
+            if constexpr (index==0)
+            {
+                return 
+                multiple_interval<ratio_interval<exact_distance_t>,exact_interval<interval_length_t,accidental_count_t,exact_distance_ts...>>
+                ::first;
+            }
+            else
+            {
+                return 
+                multiple_interval<ratio_interval<exact_distance_t>,exact_interval<interval_length_t,accidental_count_t,exact_distance_ts...>>
+                ::second.template index_ratio<index-1>();
+            }
+        }
+
+        template<size_t index>
+        using ratio_interval_type = typename ratio_interval_type_holder<index,exact_interval>::held;
+
+        using pure_interval_type = typename exact_interval<interval_length_t,accidental_count_t,exact_distance_ts...>::pure_interval_type;
+
     };
 
     template<interval_count_num interval_length_t, accidental_count_num accidental_count_t, exact_distance_num exact_distance_t>
@@ -323,7 +395,14 @@ namespace ma
         }
 
 
-        constexpr pure_interval<interval_length_t,accidental_count_t> get_pure_interval() const
+        constexpr pure_interval<interval_length_t,accidental_count_t> get_pure_interval()
+        {
+            return 
+            multiple_interval<ratio_interval<exact_distance_t>,pure_interval<interval_length_t,accidental_count_t>>
+            ::second;
+        }
+
+        constexpr pure_interval<interval_length_t,accidental_count_t> const& get_pure_interval() const
         {
             return 
             multiple_interval<ratio_interval<exact_distance_t>,pure_interval<interval_length_t,accidental_count_t>>
@@ -331,15 +410,34 @@ namespace ma
         }
 
         template<size_t index>
-        constexpr ratio_interval<exact_distance_t> index_ratio() const
+        constexpr ratio_interval<exact_distance_t>& index_ratio()
         {
             static_assert(index==0,"exact_interval indexed for a ratio interval too deep");
             return
             multiple_interval<ratio_interval<exact_distance_t>,pure_interval<interval_length_t,accidental_count_t>>
             ::first;
         }
+
+        template<size_t index>
+        constexpr ratio_interval<exact_distance_t> const& index_ratio() const
+        {
+            static_assert(index==0,"exact_interval indexed for a ratio interval too deep");
+            return
+            multiple_interval<ratio_interval<exact_distance_t>,pure_interval<interval_length_t,accidental_count_t>>
+            ::first;
+        }
+
+        template<size_t index>
+        using ratio_interval_type = typename ratio_interval_type_holder<index,exact_interval>::held;
+
+        using pure_interval_type = pure_interval<interval_length_t,accidental_count_t>;
     };
 
+    template<size_t index, typename exact_interval_t>
+    struct ratio_interval_type_holder
+    {
+        using held = std::remove_reference_t<decltype(std::declval<exact_interval_t>().template index_ratio<index>())>;
+    };
 
     template<
         interval_count_num interval_length_t, accidental_count_num accidental_count_t,
@@ -396,6 +494,9 @@ namespace ma
         {
             return get_anchor_note_name()*distance.get_pure_interval();
         }
+
+        using anchor_note_type = anchor_t;
+        using interval_type = exact_interval_t;
         
     };
 
